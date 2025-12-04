@@ -1,0 +1,34 @@
+package com.example.vulnapp.controller;
+
+import org.springframework.web.bind.annotation.*;
+import java.io.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+@RestController
+public class VulnerableController {
+
+    private Map<String, String> userPasswords = new ConcurrentHashMap<>();
+
+    @PostMapping("/upload-object")
+    public String handleObjectUpload(@RequestBody byte[] serializedObject) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedObject));
+        Object obj = ois.readObject();
+        return "Deserialized object: " + obj.toString();
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String username, @RequestParam String newPassword) {
+        if (!userPasswords.containsKey(username)) {
+            userPasswords.put(username, "defaultPass");
+        }
+
+        userPasswords.put(username, newPassword);
+        return "Password reset for user: " + username;
+    }
+
+    @GetMapping("/get-password")
+    public String getPassword(@RequestParam String username) {
+        return "Stored password: " + userPasswords.get(username);
+    }
+}
